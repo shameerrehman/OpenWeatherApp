@@ -1,9 +1,30 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function Home() {
+  const [cities, setCities] = useState([])
   const [selectedCity, setSelectedCity] = useState("")
+
+  useEffect(() => {
+    const loadCities = async () => {
+      try {
+        const res = await fetch("/city.list.min.json")
+        const data = await res.json()
+
+        // Filter for CA cities only due to large file size
+        const filtered = data.filter(city =>
+          city.country === "CA"
+        )
+        
+        setCities(filtered)
+      } catch (err) {
+        console.error("Failed to load city list", err)
+      }
+    }
+
+    loadCities()
+  }, [])
 
   return (
     <main className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
@@ -18,14 +39,15 @@ export default function Home() {
           <option value="" disabled>
             Select a city
           </option>
-          <option value="Toronto">Toronto, CA</option>
-          <option value="Vancouver">Vancouver, CA</option>
-          <option value="New York">New York, US</option>
-          <option value="Chicago">Chicago, US</option>
+          {cities.map((city) => (
+            <option key={city.id} value={city.name}>
+              {city.name}, {city.country}
+            </option>
+          ))}
         </select>
 
         <button
-          onClick={() => console.log("Fetch weather for", selectedCity)}
+          onClick={() => console.log("City selected:", selectedCity)}
           disabled={!selectedCity}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
         >
