@@ -24,6 +24,8 @@ export default function RootLayout({ children }) {
           margin: 0,
           padding: 0,
           fontFamily: 'var(--font-geist-sans)',
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #ffaf7b 0%, #d76d77 50%, #3a1c71 100%)',
         }}
         suppressHydrationWarning
       >

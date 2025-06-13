@@ -70,57 +70,54 @@ export default function Home() {
   }, [isMetric])
 
   return (
-    <Container maxWidth="sm" sx={{ minHeight: '100vh', py: 4 }}>
-      {/* Main layout container */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+    <Container maxWidth="sm" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Box
+        sx={{
+          width: '100%',
+          bgcolor: 'rgba(255,255,255,0.7)', // semi-transparent white
+          borderRadius: 4,
+          boxShadow: 3,
+          p: 4,
+          backdropFilter: 'blur(4px)', // frosted glass effect
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 3,
+        }}
+      >
         {/* App title */}
-        <Typography variant="h3" component="h1" gutterBottom>
+        <Typography variant="h3" component="h1">
           Open Weather App
         </Typography>
 
         {/* Error alert if something goes wrong */}
-        {error && (
-          <Alert severity="error" sx={{ width: '100%' }}>
-            {error}
-          </Alert>
-        )}
+        {error && <Alert severity="error">{error}</Alert>}
 
         {/* City selector and Get Weather button */}
-        <Box sx={{ display: 'flex', gap: 2, width: '100%', alignItems: 'center' }}>
+        <Box display="flex" gap={2} width="100%" alignItems="center">
           <FormControl fullWidth>
             <InputLabel>Select a city</InputLabel>
             <Select
               value={selectedCity?.id || ""}
-              onChange={(e) =>
+              onChange={e =>
                 setSelectedCity(
                   cities.find(city => city.id === parseInt(e.target.value))
                 )
               }
               label="Select a city"
             >
-              {cities.map((city) => (
+              {cities.map(city => (
                 <MenuItem key={city.id} value={city.id}>
                   {city.name}, {city.country}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-
           <Button
             variant="contained"
             onClick={fetchWeather}
             disabled={!selectedCity}
-            size="large"
             startIcon={<CloudIcon />}
-            sx={{
-              borderRadius: 3,
-              boxShadow: 3,
-              fontWeight: 'bold',
-              px: 4,
-              py: 1.5,
-              letterSpacing: 1,
-              height: 56,
-            }}
           >
             Get Weather
           </Button>
@@ -130,11 +127,7 @@ export default function Home() {
         <UnitToggle isMetric={isMetric} onToggle={() => setIsMetric(!isMetric)} />
 
         {/* Loading spinner while fetching data */}
-        {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <CircularProgress />
-          </Box>
-        )}
+        {loading && <CircularProgress />}
 
         {/* Weather card display */}
         {weather && <WeatherCard weather={weather} isMetric={isMetric} />}
