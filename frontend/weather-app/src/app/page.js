@@ -2,6 +2,20 @@
 
 import { useState, useEffect } from "react"
 import WeatherCard from "@/components/WeatherCard"
+import UnitToggle from "@/components/UnitToggle"
+import { 
+  Container, 
+  Typography, 
+  Select, 
+  MenuItem, 
+  Button, 
+  Box,
+  FormControl,
+  InputLabel,
+  Alert,
+  CircularProgress
+} from '@mui/material'
+import CloudIcon from '@mui/icons-material/Cloud';
 
 export default function Home() {
   const [cities, setCities] = useState([])
@@ -9,6 +23,7 @@ export default function Home() {
   const [weather, setWeather] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [isMetric, setIsMetric] = useState(true)
 
   // Load cities from JSON file and filter
   useEffect(() => {
@@ -32,7 +47,7 @@ export default function Home() {
     loadCities()
   }, [])
 
-  // Fetch weather using OpenWeather API baed on ctiy ID
+  // Fetch weather using OpenWeather API based on city ID
   const fetchWeather = async () => {
     if (!selectedCity) return
 
@@ -41,7 +56,7 @@ export default function Home() {
 
     try {
       const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?id=${selectedCity.id}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?id=${selectedCity.id}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=${isMetric ? 'metric' : 'imperial'}`
       )
 
       if (!res.ok) throw new Error("City not found")
@@ -51,50 +66,81 @@ export default function Home() {
     } catch (err) {
       setWeather(null)
       setError(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
+  // Fetch weather when unit changes
+  useEffect(() => {
+    if (selectedCity) {
+      fetchWeather()
+    }
+  }, [isMetric])
+
   return (
-    <main className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-6">Open Weather App</h1>
+    <Container maxWidth="sm" sx={{ minHeight: '100vh', py: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+        <Typography variant="h3" component="h1" gutterBottom>
+          Open Weather App
+        </Typography>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+        {error && (
+          <Alert severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        )}
 
-      <div className="flex gap-2 mb-6">
-        <select
-          className="p-2 rounded border border-gray-300 w-64"
-          onChange={(e) =>
-            setSelectedCity(
-              cities.find(city => city.id === parseInt(e.target.value))
-            )
-          }
-          value={selectedCity?.id || ""}
-        >
-          <option value="" disabled>
-            Select a city
-          </option>
-          {cities.map((city) => (
-            <option key={city.id} value={city.id}>
-              {city.name}, {city.country}
-            </option>
-          ))}
-        </select>
+        <Box sx={{ display: 'flex', gap: 2, width: '100%', alignItems: 'center' }}>
+          <FormControl fullWidth>
+            <InputLabel>Select a city</InputLabel>
+            <Select
+              value={selectedCity?.id || ""}
+              onChange={(e) =>
+                setSelectedCity(
+                  cities.find(city => city.id === parseInt(e.target.value))
+                )
+              }
+              label="Select a city"
+            >
+              {cities.map((city) => (
+                <MenuItem key={city.id} value={city.id}>
+                  {city.name}, {city.country}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <button
-          onClick={fetchWeather}
-          disabled={!selectedCity}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-        >
-          Get Weather
-        </button>
-      </div>
+          <Button
+            variant="contained"
+            onClick={fetchWeather}
+            disabled={!selectedCity}
+            size="large"
+            startIcon={<CloudIcon />}
+            sx={{
+              borderRadius: 3,
+              boxShadow: 3,
+              fontWeight: 'bold',
+              px: 4,
+              py: 1.5,
+              letterSpacing: 1,
+              height: 56,
+            }}
+          >
+            Get Weather
+          </Button>
+        </Box>
 
-      {loading && <p>Loading weather data...</p>}
+        <UnitToggle isMetric={isMetric} onToggle={() => setIsMetric(!isMetric)} />
 
-      {weather && <WeatherCard weather={weather} />}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        )}
 
-    </main>
+        {weather && <WeatherCard weather={weather} isMetric={isMetric} />}
+      </Box>
+    </Container>
   )
 }

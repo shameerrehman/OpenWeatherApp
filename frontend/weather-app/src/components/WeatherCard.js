@@ -1,40 +1,61 @@
-export default function WeatherCard({ weather }) {
+import { Card, CardContent, Typography, Grid, Paper } from '@mui/material';
+
+export default function WeatherCard({ weather, isMetric }) {
   if (!weather) return null;
 
+  const getUnitSymbol = (type) => {
+    if (type === 'temperature') return isMetric ? '°C' : '°F';
+    if (type === 'speed') return isMetric ? 'm/s' : 'mph';
+    return '';
+  };
+
   return (
-    <div className="bg-white p-6 rounded shadow-md text-center">
-      <h2 className="text-2xl font-semibold">{weather.name}</h2>
-      <div className="flex items-center justify-center mb-4">
-        <img
-          src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
-          alt={weather.weather[0].description}
-          className="w-16 h-16"
-        />
-        <span className="text-3xl font-bold ml-2">
-          {Math.round(weather.main.temp)}°C
-        </span>
-      </div>
-      <p className="text-xl text-gray-600 capitalize mb-4">
-        {weather.weather[0].description}
-      </p>
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div className="bg-gray-50 p-3 rounded">
-          <p className="font-semibold">Feels Like</p>
-          <p>{Math.round(weather.main.feels_like)}°C</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded">
-          <p className="font-semibold">Humidity</p>
-          <p>{weather.main.humidity}%</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded">
-          <p className="font-semibold">Wind Speed</p>
-          <p>{weather.wind.speed} m/s</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded">
-          <p className="font-semibold">Pressure</p>
-          <p>{weather.main.pressure} hPa</p>
-        </div>
-      </div>
-    </div>
+    <Card>
+      <CardContent>
+        <Typography variant="h5" align="center" gutterBottom>
+          {weather.name}
+        </Typography>
+        <Grid container justifyContent="center" alignItems="center" mb={2}>
+          <img
+            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+            alt={weather.weather[0].description}
+            width={48}
+            height={48}
+          />
+          <Typography variant="h4" component="span" ml={1}>
+            {Math.round(weather.main.temp)}{getUnitSymbol('temperature')}
+          </Typography>
+        </Grid>
+        <Typography align="center" color="text.secondary" gutterBottom>
+          {weather.weather[0].description}
+        </Typography>
+        <Grid container spacing={2} mt={1}>
+          <Grid item xs={6}>
+            <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="subtitle2">Feels Like</Typography>
+              <Typography>{Math.round(weather.main.feels_like)}{getUnitSymbol('temperature')}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
+            <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="subtitle2">Humidity</Typography>
+              <Typography>{weather.main.humidity}%</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
+            <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="subtitle2">Wind Speed</Typography>
+              <Typography>{Math.round(weather.wind.speed)} {getUnitSymbol('speed')}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
+            <Paper elevation={2} sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="subtitle2">Pressure</Typography>
+              <Typography>{weather.main.pressure} hPa</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
   );
 } 
