@@ -48,7 +48,7 @@ export default function Home() {
   }, [])
 
   // Fetch clothing suggestions based on weather data
-  const fetchClothingSuggestions = async (weatherData) => {
+  const fetchClothingSuggestions = async (weatherData, isMetric) => {
     setSuggestionsLoading(true)
     setSuggestionsError(null)
     try {
@@ -61,7 +61,8 @@ export default function Home() {
           temperature: weatherData.main.temp,
           condition: weatherData.weather[0].main,
           windSpeed: weatherData.wind.speed,
-          humidity: weatherData.main.humidity
+          humidity: weatherData.main.humidity,
+          unit: isMetric ? 'metric' : 'imperial'
         })
       })
       
@@ -88,7 +89,7 @@ export default function Home() {
       const data = await res.json()
       setWeather(data)
       // Fetch clothing suggestions when weather data is available
-      await fetchClothingSuggestions(data)
+      await fetchClothingSuggestions(data, isMetric)
     } catch (err) {
       setWeather(null)
       setError(err.message)
@@ -96,6 +97,13 @@ export default function Home() {
       setLoading(false)
     }
   }
+
+  // Fetch clothing suggestions when new weather data is available
+  useEffect(() => {
+    if (weather) {
+      fetchClothingSuggestions(weather, isMetric);
+    }
+  }, [weather, isMetric]);
 
   // Refetch weather when the unit system changes
   useEffect(() => {
@@ -163,7 +171,7 @@ export default function Home() {
         <UnitToggle isMetric={isMetric} onToggle={() => setIsMetric(!isMetric)} />
 
         {/* Loading spinner while fetching data */}
-        {loading && <CircularProgress />}
+        {loading && !weather && <CircularProgress />}
 
         {/* Weather card display */}
         {weather && <WeatherCard weather={weather} isMetric={isMetric} />}

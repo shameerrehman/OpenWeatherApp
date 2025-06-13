@@ -15,8 +15,9 @@ const OLLAMA_API_URL = 'http://localhost:11434/api/generate';
 // Function to get clothing suggestions from Ollama
 async function getClothingSuggestions(weatherData) {
     try {
+        const temperatureUnit = weatherData.unit === 'metric' ? '°C' : '°F';
         const prompt = `Based on the following weather data, suggest appropriate clothing items:
-        Temperature: ${weatherData.temperature}°C
+        Temperature: ${weatherData.temperature}${temperatureUnit}
         Weather condition: ${weatherData.condition}
         Wind speed: ${weatherData.windSpeed} km/h
         Humidity: ${weatherData.humidity}%
