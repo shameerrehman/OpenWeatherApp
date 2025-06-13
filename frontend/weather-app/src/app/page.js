@@ -18,6 +18,7 @@ import {
 import CloudIcon from '@mui/icons-material/Cloud';
 
 export default function Home() {
+  // State for city list, selected city, weather data, loading, error, and unit toggle
   const [cities, setCities] = useState([])
   const [selectedCity, setSelectedCity] = useState(null)
   const [weather, setWeather] = useState(null)
@@ -25,42 +26,32 @@ export default function Home() {
   const [error, setError] = useState(null)
   const [isMetric, setIsMetric] = useState(true)
 
-  // Load cities from JSON file and filter
+  // Load cities from JSON file and filter for Canadian cities
   useEffect(() => {
     const loadCities = async () => {
       try {
         const res = await fetch("/city.list.min.json")
         const data = await res.json()
-
-        // Filter for CA cities only due to large file size
-        const filtered = data.filter(city =>
-          city.country === "CA"
-        )
-
+        // Only keep cities in Canada (CA)
+        const filtered = data.filter(city => city.country === "CA")
         setCities(filtered)
       } catch (err) {
-        console.error("Failed to load city list", err)
         setError("City list failed to load")
       }
     }
-
     loadCities()
   }, [])
 
-  // Fetch weather using OpenWeather API based on city ID
+  // Fetch weather data for the selected city and unit
   const fetchWeather = async () => {
     if (!selectedCity) return
-
     setLoading(true)
     setError(null)
-
     try {
       const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?id=${selectedCity.id}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=${isMetric ? 'metric' : 'imperial'}`
       )
-
       if (!res.ok) throw new Error("City not found")
-
       const data = await res.json()
       setWeather(data)
     } catch (err) {
@@ -71,7 +62,7 @@ export default function Home() {
     }
   }
 
-  // Fetch weather when unit changes
+  // Refetch weather when the unit system changes
   useEffect(() => {
     if (selectedCity) {
       fetchWeather()
@@ -80,17 +71,21 @@ export default function Home() {
 
   return (
     <Container maxWidth="sm" sx={{ minHeight: '100vh', py: 4 }}>
+      {/* Main layout container */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+        {/* App title */}
         <Typography variant="h3" component="h1" gutterBottom>
           Open Weather App
         </Typography>
 
+        {/* Error alert if something goes wrong */}
         {error && (
           <Alert severity="error" sx={{ width: '100%' }}>
             {error}
           </Alert>
         )}
 
+        {/* City selector and Get Weather button */}
         <Box sx={{ display: 'flex', gap: 2, width: '100%', alignItems: 'center' }}>
           <FormControl fullWidth>
             <InputLabel>Select a city</InputLabel>
@@ -131,14 +126,17 @@ export default function Home() {
           </Button>
         </Box>
 
+        {/* Unit toggle for metric/imperial */}
         <UnitToggle isMetric={isMetric} onToggle={() => setIsMetric(!isMetric)} />
 
+        {/* Loading spinner while fetching data */}
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <CircularProgress />
           </Box>
         )}
 
+        {/* Weather card display */}
         {weather && <WeatherCard weather={weather} isMetric={isMetric} />}
       </Box>
     </Container>
