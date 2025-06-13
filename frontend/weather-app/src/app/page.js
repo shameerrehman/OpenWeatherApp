@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import WeatherCard from "@/components/WeatherCard"
 
 export default function Home() {
   const [cities, setCities] = useState([])
@@ -9,18 +10,19 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Load cities from JSON
+  // Load cities from JSON file and filter
   useEffect(() => {
     const loadCities = async () => {
       try {
         const res = await fetch("/city.list.min.json")
         const data = await res.json()
 
+        // Filter for CA cities only due to large file size
         const filtered = data.filter(city =>
-          city.country === "CA" || city.country === "US"
+          city.country === "CA"
         )
 
-        setCities(filtered.slice(0, 1000))
+        setCities(filtered)
       } catch (err) {
         console.error("Failed to load city list", err)
         setError("City list failed to load")
@@ -30,7 +32,7 @@ export default function Home() {
     loadCities()
   }, [])
 
-  // Fetch weather using OpenWeather API
+  // Fetch weather using OpenWeather API baed on ctiy ID
   const fetchWeather = async () => {
     if (!selectedCity) return
 
@@ -91,18 +93,8 @@ export default function Home() {
 
       {loading && <p>Loading weather data...</p>}
 
-      {weather && (
-        <div className="bg-white p-6 rounded shadow-md text-center">
-          <h2 className="text-2xl font-semibold">{weather.name}</h2>
-          <p className="text-xl">{weather.main.temp}°C</p>
-          <p className="capitalize">{weather.weather[0].description}</p>
-          <img
-            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
-            alt="weather icon"
-            className="mx-auto"
-          />
-        </div>
-      )}
+      {weather && <WeatherCard weather={weather} />}
+
     </main>
   )
 }
