@@ -43,7 +43,7 @@ export default function ClothingSuggestions({ suggestions, loading, error }) {
       <Box display="flex" alignItems="center" gap={1} mb={2}>
         <CheckroomIcon color="primary" />
         <Typography variant="h6" component="h2">
-          Clothing Suggestions
+          Clothing Suggestions AI
         </Typography>
       </Box>
       <Box sx={{ 
