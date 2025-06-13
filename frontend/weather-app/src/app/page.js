@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import WeatherCard from "@/components/WeatherCard"
 import UnitToggle from "@/components/UnitToggle"
+import ClothingSuggestions from "@/components/ClothingSuggestions"
 import { 
   Container, 
   Typography, 
@@ -25,6 +26,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [isMetric, setIsMetric] = useState(true)
+  // New state for clothing suggestions
+  const [suggestions, setSuggestions] = useState(null)
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const [suggestionsError, setSuggestionsError] = useState(null)
 
   // Load cities from JSON file and filter for Canadian cities
   useEffect(() => {
@@ -42,6 +47,34 @@ export default function Home() {
     loadCities()
   }, [])
 
+  // Fetch clothing suggestions based on weather data
+  const fetchClothingSuggestions = async (weatherData) => {
+    setSuggestionsLoading(true)
+    setSuggestionsError(null)
+    try {
+      const res = await fetch('http://localhost:3001/api/suggestions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          temperature: weatherData.main.temp,
+          condition: weatherData.weather[0].main,
+          windSpeed: weatherData.wind.speed,
+          humidity: weatherData.main.humidity
+        })
+      })
+      
+      if (!res.ok) throw new Error('Failed to get clothing suggestions')
+      const data = await res.json()
+      setSuggestions(data.suggestions)
+    } catch (err) {
+      setSuggestionsError(err.message)
+    } finally {
+      setSuggestionsLoading(false)
+    }
+  }
+
   // Fetch weather data for the selected city and unit
   const fetchWeather = async () => {
     if (!selectedCity) return
@@ -54,6 +87,8 @@ export default function Home() {
       if (!res.ok) throw new Error("City not found")
       const data = await res.json()
       setWeather(data)
+      // Fetch clothing suggestions when weather data is available
+      await fetchClothingSuggestions(data)
     } catch (err) {
       setWeather(null)
       setError(err.message)
@@ -70,7 +105,7 @@ export default function Home() {
   }, [isMetric])
 
   return (
-    <Container maxWidth="sm" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Container maxWidth="md" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <Box
         sx={{
           width: '100%',
@@ -78,6 +113,7 @@ export default function Home() {
           borderRadius: 4,
           boxShadow: 3,
           p: 4,
+          my: 6, // Adding vertical margin
           backdropFilter: 'blur(4px)', // frosted glass effect
           display: 'flex',
           flexDirection: 'column',
@@ -131,6 +167,13 @@ export default function Home() {
 
         {/* Weather card display */}
         {weather && <WeatherCard weather={weather} isMetric={isMetric} />}
+
+        {/* Clothing suggestions */}
+        <ClothingSuggestions 
+          suggestions={suggestions}
+          loading={suggestionsLoading}
+          error={suggestionsError}
+        />
       </Box>
     </Container>
   )
